@@ -59,6 +59,78 @@ jobs:
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
 
+     - name: Clone source
+        run: |
+          git clone $REPO_URL -b $REPO_BRANCH openwrt
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Write network config (IPv4 + IPv6 Auto)
+        run: |
+          cd openwrt
+          mkdir -p files/etc/config
+
+          cat > files/etc/config/network <<EOF
+config interface 'loopback'
+        option device 'lo'
+        option proto 'static'
+        option ipaddr '127.0.0.1'
+        option netmask '255.0.0.0'
+
+config device
+        option name 'br-lan'
+        option type 'bridge'
+
+config interface 'lan'
+        option device 'br-lan'
+        option proto 'static'
+        option ipaddr '${{ github.event.inputs.LAN_IP }}'
+        option netmask '255.255.255.0'
+        option ip6assign '64'
+
+config interface 'wan'
+        option device 'eth0'
+        option proto 'dhcp'
+
+config interface 'wan6'
+        option device 'eth0'
+        option proto 'dhcpv6'
+        option reqaddress 'try'
+        option reqprefix 'auto'
+EOF
+
+      - name: Configure DHCPv6
+        run: |
+          cd openwrt
+          mkdir -p files/etc/config
+
+          cat > files/etc/config/dhcp <<EOF
+config dhcp 'lan'
+        option interface 'lan'
+        option start '100'
+        option limit '150'
+        option leasetime '12h'
+        option ra 'server'
+        option dhcpv6 'server'
+        option ra_management '1'
+EOF
+
+      - name: Default config
+        run: |
+          cd openwrt
+          make defconfig
+
+      - name: Download packages
+        run: |
+          cd openwrt
+          make download -j$(nproc)
+
+      - name: Compile firmware
+        run: |
+          cd openwrt
+          make -j$(nproc) || make -j1 V=s
+          
     - name: 最大化构建空间
       uses: easimon/maximize-build-space@master
       with:
