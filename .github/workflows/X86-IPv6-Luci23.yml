@@ -15,10 +15,11 @@ on:
   workflow_dispatch:
 # 定时编译，国际时间👇
   # schedule:
-   #  - cron: 0 17 * * *
+  #  - cron: 0 17 * * *
   # watch:
   #   types: started
- 
+
+
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
@@ -52,7 +53,7 @@ jobs:
         echo -e "$(sudo lshw -short -C memory | grep GiB)\n"
         echo "--------------------------硬盘信息--------------------------"
         echo "硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT
-          
+
     - name: 最大化构建空间
       uses: easimon/maximize-build-space@master
       with:
