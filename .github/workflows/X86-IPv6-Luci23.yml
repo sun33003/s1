@@ -19,47 +19,50 @@ on:
   # watch:
   #   types: started
 
-    - name: Configure Router Network (IPv4 + IPv6 Auto)
-     run: |
-     cd openwrt
-     mkdir -p files/etc/config
+   
+        make defconfig
 
-      cat > files/etc/config/network <<'EOF'
-        config interface 'loopback'
+    - name: Configure Network (IPv6 Router)
+      run: |
+        cd openwrt
+        mkdir -p files/etc/config
+
+        cat > files/etc/config/network <<'EOF'
+config interface 'loopback'
         option device 'lo'
         option proto 'static'
         option ipaddr '127.0.0.1'
         option netmask '255.0.0.0'
 
-        config device
+config device
         option name 'br-lan'
         option type 'bridge'
 
-        config interface 'lan'
+config interface 'lan'
         option device 'br-lan'
         option proto 'static'
-        option ipaddr '192.168.222.1'
+        option ipaddr '192.168.1.1'
         option netmask '255.255.255.0'
         option ip6assign '64'
 
-        config interface 'wan'
+config interface 'wan'
         option device 'eth0'
         option proto 'dhcp'
 
-        config interface 'wan6'
+config interface 'wan6'
         option device 'eth0'
         option proto 'dhcpv6'
         option reqaddress 'try'
         option reqprefix 'auto'
-        EOF
+EOF
 
-        - name: Configure DHCPv6
-        run: |
+    - name: Configure DHCPv6
+      run: |
         cd openwrt
         mkdir -p files/etc/config
 
         cat > files/etc/config/dhcp <<'EOF'
-        config dhcp 'lan'
+config dhcp 'lan'
         option interface 'lan'
         option start '100'
         option limit '150'
@@ -67,7 +70,7 @@ on:
         option ra 'server'
         option dhcpv6 'server'
         option ra_management '1'
-        EOF
+EOF
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
