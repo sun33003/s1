@@ -18,13 +18,7 @@ on:
    #  - cron: 0 17 * * *
   # watch:
   #   types: started
-  
-      SERVER_IP:
-        description: '主路由IP选项'     
-        required: true
-        default: '192.168.222.1'
-        type: string
-        
+ 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
